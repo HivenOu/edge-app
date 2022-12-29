@@ -17,6 +17,7 @@ func TakePhotograph(photoName string) error {
 	}
 	//realCMD := fmt.Sprintf(PhotoCMD, photoName)
 	cmd := exec.Command(PhotoCMD, photoName)
+
 	return cmd.Run()
 }
 

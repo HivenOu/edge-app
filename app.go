@@ -83,7 +83,7 @@ func camControl(client MQTT.Client, message MQTT.Message) {
 				return
 			}
 			s := base64.StdEncoding.EncodeToString(b)
-			fmt.Println(s)
+			client.Publish("", 0, false, s)
 			return
 		}
 		fmt.Printf("invalid action : %s", msg.Action)
