@@ -3,6 +3,10 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"edge-app/camcontroll"
+	"edge-app/domain"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -13,19 +17,20 @@ import (
 
 func main() {
 	subClient := InitMqttClient(onSubConnectionLost)
-	pubClient := InitMqttClient(onPubConnectionLost)
+	//pubClient := InitMqttClient(onPubConnectionLost)
 
 	wait := sync.WaitGroup{}
 	wait.Add(1)
+	//go func() {
+	//	for {
+	//		time.Sleep(1 * time.Second)
+	//		pubClient.Publish("topic", 0, false, "hello world")
+	//	}
+	//}()
 
-	go func() {
-		for {
-			time.Sleep(1 * time.Second)
-			pubClient.Publish("topic", 0, false, "hello world")
-		}
-	}()
-
-	subClient.Subscribe("topic", 0, onReceived)
+	//subClient.Subscribe("#", 0, onReceived)
+	subClient.Subscribe("/cam_control", 0, camControl)
+	//subClient.Subscribe("", 0, onReceived)
 
 	wait.Wait()
 }
@@ -55,8 +60,39 @@ func InitMqttClient(onConnectionLost MQTT.ConnectionLostHandler) MQTT.Client {
 	return client
 }
 
+func camControl(client MQTT.Client, message MQTT.Message) {
+	fmt.Printf("Receive topic: %s,  payload: %s \n", message.Topic(), string(message.Payload()))
+	if string(message.Payload()) != "" {
+		msg := new(domain.MQTTMsg)
+		if err := json.Unmarshal(message.Payload(), msg); err != nil {
+			fmt.Printf(err.Error())
+			return
+		}
+		if msg.Action == "photo" {
+			err := camcontroll.TakePhotograph("./images/image.jpg")
+			if err != nil {
+				fmt.Printf(err.Error())
+				return
+			}
+			return
+		}
+		if msg.Action == "get_photo" {
+			b, err := camcontroll.GetPhotoByte("./images/image.jpg")
+			if err != nil {
+				fmt.Printf(err.Error())
+				return
+			}
+			s := base64.StdEncoding.EncodeToString(b)
+			fmt.Println(s)
+			return
+		}
+		fmt.Printf("invalid action : %s", msg.Action)
+	}
+}
+
 func onReceived(client MQTT.Client, message MQTT.Message) {
 	fmt.Printf("Receive topic: %s,  payload: %s \n", message.Topic(), string(message.Payload()))
+
 }
 
 // sub客户端与服务端断连后，触发重连机制
