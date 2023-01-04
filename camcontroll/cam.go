@@ -23,7 +23,7 @@ func TakePhotograph(photoName string) error {
 // 获取照片
 func GetPhotoByte(photoName string) ([]byte, error) {
 	//base64.StdEncoding
-	f, err := os.Open("")
+	f, err := os.Open(photoName)
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil, nil

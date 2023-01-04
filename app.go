@@ -68,7 +68,7 @@ func camControl(client MQTT.Client, message MQTT.Message) {
 			fmt.Printf(err.Error())
 			return
 		}
-		if msg.Action == "photo" {
+		if msg.Action == "take_photo" {
 			err := camcontroll.TakePhotograph("./images/image.jpg")
 			if err != nil {
 				fmt.Printf(err.Error())
@@ -83,7 +83,15 @@ func camControl(client MQTT.Client, message MQTT.Message) {
 				return
 			}
 			s := base64.StdEncoding.EncodeToString(b)
-			fmt.Println(s)
+			imgMsg := new(domain.UploadImageMsg)
+			imgMsg.Type = "base64"
+			imgMsg.ImageData = s
+			imageByte, err := json.Marshal(imgMsg)
+			if err != nil {
+				fmt.Printf(err.Error())
+				return
+			}
+			client.Publish("0a6fccc0d800f4632fefc00d3f4e4bfd/nodes/656f1790-6458-4b45-9e36-37b4add17a84/user/image", 0, false, string(imageByte))
 			return
 		}
 		fmt.Printf("invalid action : %s", msg.Action)
