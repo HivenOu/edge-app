@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"math/rand"
 	"sync"
 	"time"
@@ -16,6 +17,15 @@ import (
 )
 
 func main() {
+	//init log
+	logrus.SetFormatter(&logrus.TextFormatter{
+		ForceColors:            true,
+		DisableLevelTruncation: true,
+		PadLevelText:           true,
+		FullTimestamp:          true,
+		TimestampFormat:        "2006/01/02 15:04:05",
+	})
+
 	subClient := InitMqttClient(onSubConnectionLost)
 	//pubClient := InitMqttClient(onPubConnectionLost)
 
@@ -92,6 +102,8 @@ func camControl(client MQTT.Client, message MQTT.Message) {
 				return
 			}
 			client.Publish("0a6fccc0d800f4632fefc00d3f4e4bfd/nodes/656f1790-6458-4b45-9e36-37b4add17a84/user/image", 0, false, string(imageByte))
+			//发送给边缘端的debian服务器
+			//utils.ExecuteRequest()
 			return
 		}
 		fmt.Printf("invalid action : %s", msg.Action)
@@ -107,7 +119,7 @@ func onReceived(client MQTT.Client, message MQTT.Message) {
 func onSubConnectionLost(client MQTT.Client, err error) {
 	fmt.Println("on sub connect lost, try to reconnect")
 	loopConnect(client)
-	client.Subscribe("topic", 0, onReceived)
+	//client.Subscribe("topic", 0, onReceived)
 }
 
 // pub客户端与服务端断连后，触发重连机制
