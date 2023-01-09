@@ -37,7 +37,10 @@ func ExecuteRequest(host, path, method, rawQuery, filename string, body []byte) 
 		if err != nil {
 			return nil, err
 		}
-		w.Close()
+		err = w.Close()
+		if err != nil {
+			return nil, err
+		}
 		contentType = w.FormDataContentType()
 		reader = rb
 	} else if len(body) != 0 {
