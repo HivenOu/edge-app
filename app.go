@@ -94,7 +94,7 @@ func camControl(client MQTT.Client, message MQTT.Message) {
 				return
 			}
 			//发送给边缘端的debian服务器 192.168.0.104:8080
-			_, err = utils.ExecuteRequest("10.70.5.96:8080", "/ief-images", http.MethodPost, "", fileName, b)
+			_, err = utils.ExecuteRequest("192.168.0.104:8080", "/dis/ief-images", http.MethodPost, "", fileName, b)
 			if err != nil {
 				fmt.Println(err.Error())
 			}
