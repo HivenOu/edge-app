@@ -1,0 +1,39 @@
+name: Build GO Binary
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: This is a tag
+        required: true
+        default: "test"
+        type: choice
+        options:
+          - dev
+          - test
+          - uat
+jobs:
+  build:
+    name: build binary
+    runs-on: ubuntu-latest
+    steps:
+      - name: git checkout
+        uses: actions/checkout@v3
+
+      - name: set up go 19
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+          cache: true
+
+      - name: go build
+        env:
+          GO111MODULE: on
+        run: |
+          go mod tidy
+          echo "build arm64 linux binary" && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="$ldflags" -o app app.go
+      - name: upload binary
+        uses: actions/upload-artifact@3
+        with:
+          name: App
+          path: ./app

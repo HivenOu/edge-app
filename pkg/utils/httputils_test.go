@@ -25,6 +25,7 @@ func TestExecuteRequest(t *testing.T) {
 	file, err := os.Open("/Users/mac/appData/images/xxx.jpg")
 	if err != nil {
 		fmt.Println(err.Error())
+		t.Skip()
 		return
 	}
 	b, err := io.ReadAll(file)
